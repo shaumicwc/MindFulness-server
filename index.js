@@ -27,10 +27,25 @@ async function run() {
 
     await client.db("admin").command({ ping: 1 });
 
+    const instructorsCollection = client.db('MindFulness').collection('allInstructors')
+    const classCollection = client.db('MindFulness').collection('allClasses')
+    const selectedCollection = client.db('MindFulness').collection('selectedClasses')
+    const userCollection = client.db('MindFulness').collection('users')
 
+    //class api
+    app.get('/all-classes', async (req, res) => {
+      const result = await classCollection.find().toArray()
+      res.send(result)
+    })
+    app.get('/all-classes', async (req, res) => {
+      const email = req.query.email;
+      const query = { instructorEmail: email }
+      const result = await classCollection.find(query).toArray()
+      res.send(result)
+    })
 
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
-  } catch (error){
+  } catch (error) {
     console.log(error.message)
   }
 }
