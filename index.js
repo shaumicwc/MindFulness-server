@@ -1,4 +1,4 @@
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config()
@@ -47,6 +47,18 @@ async function run() {
     app.post('/selected-class', async (req, res) => {
       const selectedClass = req.body;
       const result = await selectedCollection.insertOne(selectedClass)
+      res.send(result)
+    })
+    app.get('/selected-classes', async (req, res) => {
+      const email = req.query.email;
+      const query = { studentEmail: email }
+      const result = await selectedCollection.find(query).toArray()
+      res.send(result)
+    })
+    app.delete('/selected-classes/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await selectedCollection.deleteOne(query)
       res.send(result)
     })
     app.get('/all-classes', async (req, res) => {
