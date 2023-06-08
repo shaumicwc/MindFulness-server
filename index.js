@@ -33,6 +33,16 @@ async function run() {
     const userCollection = client.db('MindFulness').collection('users')
 
     //class api
+    app.post('/all-classes', async (req, res) => {
+      const classes = req.body
+      const result = await classCollection.insertOne(classes)
+      res.send(result)
+    })
+    app.post('/selected-class', async (req, res) => {
+      const selectedClass = req.body;
+      const result = await selectedCollection.insertOne(selectedClass)
+      res.send(result)
+    })
     app.get('/all-classes', async (req, res) => {
       const result = await classCollection.find().toArray()
       res.send(result)
