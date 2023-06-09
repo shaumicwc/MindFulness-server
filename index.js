@@ -117,6 +117,15 @@ async function run() {
         res.send(result)
       }
     })
+    app.get('/popular-classes', async (req, res) => {
+      const query = { status: 'Approved' }
+      const result = await classCollection.find(query).sort({ enrolledStudents: -1 }).toArray()
+      res.send(result)
+    })
+    app.get('/enrolled-classes', async (req, res) => {
+      const result = await enrolledClassCollection.find().toArray()
+      res.send(result)
+    })
 
     //users api
     app.post('/all-users', async (req, res) => {
