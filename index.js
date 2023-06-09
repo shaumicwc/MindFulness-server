@@ -138,6 +138,25 @@ async function run() {
       const result = await userCollection.insertOne(user)
       res.send(result)
     })
+    app.get('/user/admin/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email, role: 'admin' }
+      console.log(email)
+      const admin = await userCollection.findOne(query)
+      res.send(admin)
+    })
+    app.get('/user/instructor/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email, role: 'instructor' }
+      const instructor = await userCollection.findOne(query)
+      res.send(instructor)
+    })
+    app.get('/user/student/:email', async (req, res) => {
+      const email = req.params.email;
+      const query = { email: email, role: 'student' }
+      const student = await userCollection.findOne(query)
+      res.send(student)
+    })
     app.get('/current-user', async (req, res) => {
       const email = req.query.email;
       const query = { email: email }
@@ -146,6 +165,11 @@ async function run() {
     })
     app.get('/all-users', async (req, res) => {
       const result = await userCollection.find().toArray()
+      res.send(result)
+    })
+    app.get('/all-instructors', async (req, res) => {
+      const query = { role: 'instructor' }
+      const result = await userCollection.find(query).toArray()
       res.send(result)
     })
     app.put('/all-users/:id', async (req, res) => {
