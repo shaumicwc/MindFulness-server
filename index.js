@@ -142,7 +142,7 @@ async function run() {
       const result = await userCollection.updateOne(query, updatedDoc)
       res.send(result)
     })
-    
+
     //payment api
     app.post("/create-payment-intent", async (req, res) => {
       const { price } = req.body;
@@ -171,7 +171,7 @@ async function run() {
       const insertResult = await paymentCollection.insertOne(payment);
 
       const enrolledQuery = { studentEmail: payment.email, classId: payment.classId }
-      const enrolledClass =  await selectedClassCollection.findOne(enrolledQuery)
+      const enrolledClass = await selectedClassCollection.findOne(enrolledQuery)
       const enrolledInsertResult = await enrolledClassCollection.insertOne(enrolledClass)
 
       const enrolledDeleteResult = await selectedClassCollection.deleteOne(enrolledQuery)
@@ -180,17 +180,23 @@ async function run() {
       const classDocument = await classCollection.findOne(classQuery); // Fetch the latest document
 
       if (classDocument && classDocument.seats > 0) {
-          const updatedSeats = classDocument.seats - 1;
-          const updateEnrolledStudents = classDocument.enrolledStudents + 1;
-          const updateResult = await classCollection.updateOne(
-              classQuery,
-              { $set: { seats: updatedSeats, enrolledStudents : updateEnrolledStudents } }
-          );
+        const updatedSeats = classDocument.seats - 1;
+        const updateEnrolledStudents = classDocument.enrolledStudents + 1;
+        const updateResult = await classCollection.updateOne(
+          classQuery,
+          { $set: { seats: updatedSeats, enrolledStudents: updateEnrolledStudents } }
+        );
 
-          res.send({ insertResult, updateResult, enrolledDeleteResult, enrolledInsertResult });
+        res.send({ insertResult, updateResult, enrolledDeleteResult, enrolledInsertResult });
       }
-  });
-    
+    });
+    app.get('/payment-history', async (req, res) => {
+      const email = req.query.email;
+      const query = { email: email }
+      const result = await paymentCollection.find(query).sort({ date: -1 }).toArray()
+      res.send(result)
+    })
+
 
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } catch (error) {
