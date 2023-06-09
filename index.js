@@ -31,8 +31,10 @@ async function run() {
 
     const instructorsCollection = client.db('MindFulness').collection('allInstructors')
     const classCollection = client.db('MindFulness').collection('allClasses')
-    const selectedCollection = client.db('MindFulness').collection('selectedClasses')
+    const selectedClassCollection = client.db('MindFulness').collection('selectedClasses')
+    const enrolledClassCollection = client.db('MindFulness').collection('enrolledClasses')
     const userCollection = client.db('MindFulness').collection('users')
+    const paymentCollection = client.db('MindFulness').collection('payment')
 
     //instructor api
     app.get('/instructors', async (req, res) => {
@@ -40,7 +42,7 @@ async function run() {
       res.send(result)
     })
 
-    //class api
+    //classes api
     app.post('/all-classes', async (req, res) => {
       const classes = req.body
       const result = await classCollection.insertOne(classes)
@@ -48,23 +50,30 @@ async function run() {
     })
     app.post('/selected-class', async (req, res) => {
       const selectedClass = req.body;
-      const result = await selectedCollection.insertOne(selectedClass)
+      const result = await selectedClassCollection.insertOne(selectedClass)
       res.send(result)
     })
     app.get('/selected-classes', async (req, res) => {
       const email = req.query.email;
       const query = { studentEmail: email }
-      const result = await selectedCollection.find(query).toArray()
+      const result = await selectedClassCollection.find(query).toArray()
+      res.send(result)
+    })
+    app.get('/selected-class/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) }
+      const result = await selectedClassCollection.findOne(query)
       res.send(result)
     })
     app.delete('/selected-classes/:id', async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) }
-      const result = await selectedCollection.deleteOne(query)
+      const result = await selectedClassCollection.deleteOne(query)
       res.send(result)
     })
     app.get('/all-classes', async (req, res) => {
-      const result = await classCollection.find().toArray()
+      const query = { status: 'Approved' } //only shows the approved classes
+      const result = await classCollection.find(query).toArray()
       res.send(result)
     })
     app.get('/all-classes', async (req, res) => {
