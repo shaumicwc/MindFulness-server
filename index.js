@@ -1,11 +1,13 @@
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const express = require('express');
+const stripe = require('stripe')
 const cors = require('cors');
 require('dotenv').config()
 const app = express()
 const port = process.env.PORT || 3000
 
 app.use(cors())
+app.use(express.static("public"))
 app.use(express.json())
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.4kfci0x.mongodb.net/?retryWrites=true&w=majority`;
@@ -140,6 +142,29 @@ async function run() {
       const result = await userCollection.updateOne(query, updatedDoc)
       res.send(result)
     })
+    //payment api
+    app.post("/create-payment-intent", async (req, res) => {
+      const { price } = req.body;
+      const amount = Math.round(price * 100);
+      const stripeClient = stripe(process.env.STRIPE_KEY);
+      try {
+        // Create a PaymentIntent with the order amount and currency
+        const paymentIntent = await stripeClient.paymentIntents.create({
+          amount: amount,
+          currency: "usd",
+          automatic_payment_methods: {
+            enabled: true,
+          },
+        });
+
+        res.send({
+          clientSecret: paymentIntent.client_secret,
+        });
+      } catch (error) {
+        console.log(error);
+        res.status(500).send({ error: "An error occurred while creating the PaymentIntent." });
+      }
+    });
 
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } catch (error) {
