@@ -142,6 +142,7 @@ async function run() {
       const result = await userCollection.updateOne(query, updatedDoc)
       res.send(result)
     })
+    
     //payment api
     app.post("/create-payment-intent", async (req, res) => {
       const { price } = req.body;
@@ -165,6 +166,31 @@ async function run() {
         res.status(500).send({ error: "An error occurred while creating the PaymentIntent." });
       }
     });
+    app.post('/payment', async (req, res) => {
+      const payment = req.body;
+      const insertResult = await paymentCollection.insertOne(payment);
+
+      const enrolledQuery = { studentEmail: payment.email, classId: payment.classId }
+      const enrolledClass =  await selectedClassCollection.findOne(enrolledQuery)
+      const enrolledInsertResult = await enrolledClassCollection.insertOne(enrolledClass)
+
+      const enrolledDeleteResult = await selectedClassCollection.deleteOne(enrolledQuery)
+
+      const classQuery = { _id: new ObjectId(payment.classId) };
+      const classDocument = await classCollection.findOne(classQuery); // Fetch the latest document
+
+      if (classDocument && classDocument.seats > 0) {
+          const updatedSeats = classDocument.seats - 1;
+          const updateEnrolledStudents = classDocument.enrolledStudents + 1;
+          const updateResult = await classCollection.updateOne(
+              classQuery,
+              { $set: { seats: updatedSeats, enrolledStudents : updateEnrolledStudents } }
+          );
+
+          res.send({ insertResult, updateResult, enrolledDeleteResult, enrolledInsertResult });
+      }
+  });
+    
 
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } catch (error) {
